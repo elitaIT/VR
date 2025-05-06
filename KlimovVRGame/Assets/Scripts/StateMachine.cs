@@ -1,8 +1,19 @@
 using UnityEngine;
 
-public abstract class NPCState : ScriptableObject
+public class StateMachine
 {
-    public abstract void EnterState(VRShooterNPC npc);
-    public abstract void UpdateState(VRShooterNPC npc);
-    public abstract void ExitState(VRShooterNPC npc);
+    private IState currentState;
+    public IState CurrentState { get; private set; }
+
+    public void ChangeState(IState newState)
+    {
+        currentState?.Exit();
+        currentState = newState;
+        currentState?.Enter();
+    }
+
+    public void Update()
+    {
+        currentState?.Update();
+    }
 }
