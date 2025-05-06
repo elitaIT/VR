@@ -1,79 +1,42 @@
 using UnityEngine;
 
-public class CharacterControllerTeleport : MonoBehaviour
+public class TeleportationTrigger : MonoBehaviour
 {
-    [Header("Основные настройки")]
-    [SerializeField] private Transform xrOrigin; // XR Origin объект
-    [SerializeField] private CharacterController characterController;
-    [SerializeField] private Transform targetPoint; // Целевая точка
-    [Header("Настройки смещения")]
-    [SerializeField] private bool applyHeightCorrection = true; // Коррекция высоты
-
-    private Vector3 _initialControllerCenter;
-    private float _initialControllerHeight;
+    public Transform teleportDestination;  // РњРµСЃС‚Рѕ РЅР°Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ С‚РµР»РµРїРѕСЂС‚Р°С†РёРё
+    private CharacterController characterController;  // РЎСЃС‹Р»РєР° РЅР° CharacterController РёРіСЂРѕРєР°
 
     private void Start()
     {
-        // Сохраняем первоначальные параметры Character Controller
-        _initialControllerCenter = characterController.center;
-        _initialControllerHeight = characterController.height;
+        // РџРѕР»СѓС‡Р°РµРј СЃСЃС‹Р»РєСѓ РЅР° CharacterController РёРіСЂРѕРєР°
+        characterController = FindObjectOfType<CharacterController>();
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("TeleportTrigger"))
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РІ С‚СЂРёРіРіРµСЂРЅСѓСЋ Р·РѕРЅСѓ РІРѕС€РµР» РёРіСЂРѕРє (РёР»Рё РґСЂСѓРіРѕР№ РЅСѓР¶РЅС‹Р№ РѕР±СЉРµРєС‚)
+        if (other.CompareTag("Player")) // РЈР±РµРґРёС‚РµСЃСЊ, С‡С‚Рѕ Сѓ РІР°С€РµРіРѕ РёРіСЂРѕРєР° РµСЃС‚СЊ С‚РµРі "Player"
         {
-            PerformCharacterControllerTeleport();
+            Teleport(other.transform);  // РўРµР»РµРїРѕСЂС‚РёСЂСѓРµРј РёРіСЂРѕРєР°
         }
     }
 
-    private void PerformCharacterControllerTeleport()
+    private void Teleport(Transform player)
     {
-        // Отключаем Character Controller для телепортации
-        characterController.enabled = false;
-
-        // Рассчитываем смещение камеры относительно центра Character Controller
-        Vector3 cameraOffset = Camera.main.transform.position -
-                              (xrOrigin.position + characterController.center);
-
-        // Применяем новую позицию
-        xrOrigin.position = targetPoint.position - cameraOffset;
-
-        // Корректируем высоту при необходимости
-        if (applyHeightCorrection)
+        if (teleportDestination != null && characterController != null)
         {
-            AdjustControllerHeight();
-        }
+            // РџРѕР»СѓС‡Р°РµРј РїРѕР»РѕР¶РµРЅРёРµ Рё СЂРѕС‚Р°С†РёСЋ С‚РѕС‡РєРё РЅР°Р·РЅР°С‡РµРЅРёСЏ
+            Vector3 destinationPosition = teleportDestination.position;
+            Quaternion destinationRotation = teleportDestination.rotation;
 
-        // Включаем Character Controller обратно
-        characterController.enabled = true;
-    }
+            // РЎРЅРёРјР°РµРј СЃРјРµС‰РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ РІС‹Р·С‹РІР°РµС‚ CharacterController
+            Vector3 offset = characterController.center;
 
-    private void AdjustControllerHeight()
-    {
-        // Рассчитываем реальную высоту игрока
-        float playerHeight = Camera.main.transform.localPosition.y;
+            // Р Р°СЃСЃС‡РёС‚С‹РІР°РµРј РєРѕСЂСЂРµРєС‚РЅСѓСЋ РїРѕР·РёС†РёСЋ СЃ СѓС‡РµС‚РѕРј СЃРјРµС‰РµРЅРёСЏ
+            Vector3 correctedPosition = destinationPosition - offset;
 
-        // Корректируем параметры Character Controller
-        characterController.height = playerHeight;
-        characterController.center = new Vector3(
-            _initialControllerCenter.x,
-            playerHeight * 0.5f + characterController.skinWidth,
-            _initialControllerCenter.z
-        );
-    }
-
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        if (targetPoint != null && characterController != null)
-        {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(targetPoint.position + characterController.center, 
-                              new Vector3(characterController.radius*2, 
-                                       characterController.height, 
-                                       characterController.radius*2));
+            // РўРµР»РµРїРѕСЂС‚РёСЂСѓРµРј РёРіСЂРѕРєР° РІ РёСЃРїСЂР°РІР»РµРЅРЅСѓСЋ РїРѕР·РёС†РёСЋ
+            player.position = correctedPosition;
+            player.rotation = destinationRotation;  // Р•СЃР»Рё РЅСѓР¶РЅРѕ, СЃРѕС…СЂР°РЅСЏРµРј СЂРѕС‚Р°С†РёСЋ
         }
     }
-#endif
 }
