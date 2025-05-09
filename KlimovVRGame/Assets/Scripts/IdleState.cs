@@ -1,30 +1,29 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class IdleState : IState
 {
     private NPCController npc;
-    private float waitTime;
-    private float timer;
+    private float idleDuration;
+    private float idleTimer;
 
-    public IdleState(NPCController npc, float waitTime = 10f)
+    public IdleState(NPCController npc, float duration)
     {
         this.npc = npc;
-        this.waitTime = waitTime;
+        this.idleDuration = duration;
     }
 
     public void Enter()
     {
-        timer = 0f;
-        npc.SetAnimation("Idle");
-        Debug.Log("Entering Idle State");
+        npc.animator.SetBool("isRunning", false);
+        npc.animator.SetBool("isWalking", false);
+        idleTimer = 0f;
+        Debug.Log("NPC вошел в состояние ожидания");
     }
 
     public void Update()
     {
-        timer += Time.deltaTime;
-        if (timer >= waitTime)
+        idleTimer += Time.deltaTime;
+        if (idleTimer >= idleDuration)
         {
             npc.StateMachine.ChangeState(new PatrolState(npc));
         }
@@ -32,6 +31,6 @@ public class IdleState : IState
 
     public void Exit()
     {
-        Debug.Log("Exiting Idle State");
+        Debug.Log("NPC выходит из состояния ожидания");
     }
 }
