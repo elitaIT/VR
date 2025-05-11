@@ -72,3 +72,6 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+KlimovVRGame/Assets/Animations/Offensive Idle.fbx
+KlimovVRGame/Assets/Animations/character.fbx
+KlimovVRGame/Assets/Military/Basemesh/character.fbx
