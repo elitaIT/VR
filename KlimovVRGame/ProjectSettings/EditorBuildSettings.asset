@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/loca 1.unity
     guid: bcc08b79334de2a41971f02329adbc39
   - enabled: 1
-    path: Assets/Scenes/loca 2.unity
+    path: Assets/Scenes/StartLoca.unity
     guid: a413f64af86a17a40bb7df75af91daee
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}

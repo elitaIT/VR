@@ -4,10 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public class NPCController : MonoBehaviour
 {
-    [Header("Патрулирование")]
     [SerializeField] private Transform[] patrolPoints;
-
-    [Header("Обнаружение цели")]
     [SerializeField] private Transform target;
     [SerializeField] private float detectionRange = 8f;
     [SerializeField] private float attackRange = 0.1f;
