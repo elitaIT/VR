@@ -12,19 +12,33 @@ public class VRSettingsManager : MonoBehaviour
     public TextMeshProUGUI volumeValueText;
 
     [Header("Movement")]
-    public ContinuousMoveProviderBase continuousMove;
+    [SerializeField] private GameObject moveProviderObject; // Сюда перетаскиваем объект "Move" из сцены
+    private ActionBasedContinuousMoveProvider dynamicMove;
     public UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider teleportation;
     public TMP_Dropdown movementDropdown;
     public TextMeshProUGUI movementTypeText;
 
     [Header("Rotation")]
-    public XROrigin xrOrigin; // Перетащите сюда XR Origin из сцены
+    public GameObject xrOrigin;
     public TMP_Dropdown rotationDropdown;
     public Slider turnSpeedSlider;
     public TextMeshProUGUI turnSpeedValueText;
 
     private ContinuousTurnProviderBase continuousTurn;
     private SnapTurnProviderBase snapTurn;
+
+    private void Awake()
+    {
+        // Получаем компонент DynamicMoveProvider из перетащенного объекта
+        if (moveProviderObject != null)
+        {
+            dynamicMove = moveProviderObject.GetComponent<DynamicMoveProvider>();
+            if (dynamicMove == null)
+            {
+                Debug.LogError("DynamicMoveProvider не найден на объекте " + moveProviderObject.name);
+            }
+        }
+    }
 
     private void Start()
     {
@@ -35,7 +49,6 @@ public class VRSettingsManager : MonoBehaviour
 
     private void FindTurnComponents()
     {
-        // Автопоиск компонентов поворота
         if (xrOrigin != null)
         {
             continuousTurn = xrOrigin.GetComponentInChildren<ContinuousTurnProviderBase>();
@@ -43,7 +56,7 @@ public class VRSettingsManager : MonoBehaviour
         }
 
         if (continuousTurn == null || snapTurn == null)
-            Debug.LogError("Компоненты поворота не найдены!");
+            Debug.LogWarning("Компоненты поворота не найдены!");
     }
 
     private void InitializeUI()
@@ -64,8 +77,8 @@ public class VRSettingsManager : MonoBehaviour
 
     public void SetMovementType(int index)
     {
-        continuousMove.enabled = (index == 0);
-        teleportation.enabled = (index == 1);
+        if (dynamicMove != null) dynamicMove.enabled = (index == 0);
+        if (teleportation != null) teleportation.enabled = (index == 1);
         movementTypeText.text = movementDropdown.options[index].text;
         PlayerPrefs.SetInt("MovementType", index);
     }
@@ -89,7 +102,6 @@ public class VRSettingsManager : MonoBehaviour
 
     private void LoadSettings()
     {
-        // Загрузка сохранённых настроек
         volumeSlider.value = PlayerPrefs.GetFloat("Volume", 0.75f);
         movementDropdown.value = PlayerPrefs.GetInt("MovementType", 0);
         rotationDropdown.value = PlayerPrefs.GetInt("RotationType", 0);
