@@ -13,8 +13,8 @@ public class TeleportationTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Проверяем, что в триггерную зону вошел игрок (или другой нужный объект)
-        if (other.CompareTag("Player")) // Убедитесь, что у вашего игрока есть тег "Player"
+         
+        if (other.CompareTag("Player"))  
         {
             Teleport(other.transform);  // Телепортируем игрока
         }

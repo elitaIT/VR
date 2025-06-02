@@ -25,7 +25,7 @@ public class NPCController : MonoBehaviour
 
     private void Start()
     {
-        StateMachine.ChangeState(new IdleState(this, 10f)); // 10 секунд бездействия
+        StateMachine.ChangeState(new IdleState(this, 10f)); 
         animator.SetBool("isWalking", false);
         animator.SetBool("isRunning", false);
     }
@@ -47,7 +47,6 @@ public class NPCController : MonoBehaviour
             }
             else
             {
-                // AttackState можно добавить при необходимости
                 StateMachine.ChangeState(new AttackState(this, target));
             }
         }
@@ -82,7 +81,7 @@ public class NPCController : MonoBehaviour
     private bool CanSeeTarget()
     {
         return Vector3.Distance(transform.position, target.position) <= detectionRange;
-        // Можно добавить Raycast или проверку угла обзора
+
     }
 
     public void StartAttack()
