@@ -29,13 +29,13 @@ public class VRSettingsManager : MonoBehaviour
 
     private void Awake()
     {
-        // Получаем компонент DynamicMoveProvider из перетащенного объекта
+        // Получаем компонент ActionBasedContinuousMoveProvider из перетащенного объекта
         if (moveProviderObject != null)
         {
-            dynamicMove = moveProviderObject.GetComponent<DynamicMoveProvider>();
+            dynamicMove = moveProviderObject.GetComponent<ActionBasedContinuousMoveProvider>();
             if (dynamicMove == null)
             {
-                Debug.LogError("DynamicMoveProvider не найден на объекте " + moveProviderObject.name);
+                Debug.LogError("ActionBasedContinuousMoveProvider не найден на объекте " + moveProviderObject.name);
             }
         }
     }

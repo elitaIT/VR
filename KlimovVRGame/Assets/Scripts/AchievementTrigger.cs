@@ -2,15 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class AchievementTrigger : MonoBehaviour
 {
     [Header("Настройки триггера")]
     public AchievementTriggerType triggerType;
 
-    [Header("Параметры (зависит от типа)")]
-    public int floorNumber; // Для CompleteFloor
-    public bool noDamageCondition; // Для CompleteLevel
+    [Header("Параметры (зависят от типа)")]
+    public int floorNumber;          // Для CompleteFloor
+    public bool noDamageCondition;   // Для CompleteLevel
 
     private void OnTriggerEnter(Collider other)
     {
@@ -20,9 +19,15 @@ public class AchievementTrigger : MonoBehaviour
         }
     }
 
-    // Можно вызывать вручную через другие скрипты
+    // Метод для вызова достижения
     public void TriggerAchievement()
     {
+        if (AchievementSystem.Instance == null)
+        {
+            Debug.LogWarning("AchievementSystem.Instance is null. Убедитесь, что объект с AchievementSystem находится в сцене.");
+            return;
+        }
+
         switch (triggerType)
         {
             case AchievementTriggerType.StartGame:
@@ -50,7 +55,7 @@ public class AchievementTrigger : MonoBehaviour
                 break;
         }
 
-        // Опционально: отключаем триггер после срабатывания
+        // Отключаем объект триггера после срабатывания (опционально)
         gameObject.SetActive(false);
     }
 }
