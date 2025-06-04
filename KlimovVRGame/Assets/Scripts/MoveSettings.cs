@@ -1,82 +1,33 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-using TMPro;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
-public class MovementSettings : MonoBehaviour
+public class MoveSettings : MonoBehaviour
 {
-    public GameObject moveProviderObject;
-    private DynamicMoveProvider moveProvider;
+    [Header("Movement Providers")]
+    public UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider teleportProvider;
+    public DynamicMoveProvider moveProvider;
 
-    public GameObject teleportationProviderObject;
-    public GameObject teleportRayObject;
+    private const string MovementPrefKey = "MovementMode"; // 0 = Teleport, 1 = Move
 
-    public GameObject continuousTurnProviderObject;
-    private ContinuousTurnProviderBase continuousTurnProvider;
-
-    public GameObject snapTurnProviderObject;
-    private SnapTurnProviderBase snapTurnProvider;
-
-    public TMP_Dropdown movementDropdown;
-    public TMP_Dropdown turnDropdown;
-
-    private void Awake()
+    void Start()
     {
-        if (moveProviderObject != null)
-            moveProvider = moveProviderObject.GetComponent<DynamicMoveProvider>();
-
-        if (continuousTurnProviderObject != null)
-            continuousTurnProvider = continuousTurnProviderObject.GetComponent<ContinuousTurnProviderBase>();
-
-        if (snapTurnProviderObject != null)
-            snapTurnProvider = snapTurnProviderObject.GetComponent<SnapTurnProviderBase>();
+        int mode = PlayerPrefs.GetInt(MovementPrefKey, 0);
+        ApplyMovementMode(mode);
     }
 
-    private void Start()
+    public void OnMovementModeChanged(int modeIndex)
     {
-        ApplySavedSettings();
+        ApplyMovementMode(modeIndex);
+        PlayerPrefs.SetInt(MovementPrefKey, modeIndex);
     }
 
-    public void OnMovementModeChanged(int index)
+    private void ApplyMovementMode(int modeIndex)
     {
-        bool useTeleport = index == 1;
+        if (teleportProvider != null)
+            teleportProvider.enabled = (modeIndex == 0);
 
         if (moveProvider != null)
-            moveProvider.enabled = !useTeleport;
-
-        if (teleportationProviderObject != null)
-            teleportationProviderObject.SetActive(useTeleport);
-
-        if (teleportRayObject != null)
-            teleportRayObject.SetActive(useTeleport);
-
-        PlayerPrefs.SetInt("MovementMode", index);
-    }
-
-    public void OnTurnModeChanged(int index)
-    {
-        if (continuousTurnProvider != null)
-            continuousTurnProvider.enabled = index == 1;
-
-        if (snapTurnProvider != null)
-            snapTurnProvider.enabled = index == 2;
-
-        PlayerPrefs.SetInt("TurnMode", index);
-        Debug.Log("Turn mode changed to: " + index);
-    }
-
-    private void ApplySavedSettings()
-    {
-        int moveMode = PlayerPrefs.GetInt("MovementMode", 0);
-        int turnMode = PlayerPrefs.GetInt("TurnMode", 1);
-
-        if (movementDropdown != null)
-            movementDropdown.SetValueWithoutNotify(moveMode);
-
-        if (turnDropdown != null)
-            turnDropdown.SetValueWithoutNotify(turnMode);
-
-        OnMovementModeChanged(moveMode);
-        OnTurnModeChanged(turnMode);
+            moveProvider.enabled = (modeIndex == 1);
     }
 }
