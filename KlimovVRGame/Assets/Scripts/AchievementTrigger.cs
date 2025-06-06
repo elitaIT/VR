@@ -1,71 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro; // Добавляем пространство имен для TextMeshPro
 
-public class AchievementTrigger : MonoBehaviour
+public class AchievementTriggerTMP : MonoBehaviour
 {
-    [Header("Настройки триггера")]
-    public AchievementTriggerType triggerType;
+    public GameObject achievementPanel; // Ссылка на панель
+    public TMP_Text achievementText; // Теперь используем TMP_Text вместо Text
+    public string achievementName = "Новое достижение!";
+    public float displayTime = 3f;
 
-    [Header("Параметры (зависят от типа)")]
-    public int floorNumber;          // Для CompleteFloor
-    public bool noDamageCondition;   // Для CompleteLevel
+    private bool hasTriggered = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (!hasTriggered && other.CompareTag("Player"))
         {
-            TriggerAchievement();
+            hasTriggered = true;
+            ShowAchievement();
         }
     }
 
-    // Метод для вызова достижения
-    public void TriggerAchievement()
+    void ShowAchievement()
     {
-        if (AchievementSystem.Instance == null)
-        {
-            Debug.LogWarning("AchievementSystem.Instance is null. Убедитесь, что объект с AchievementSystem находится в сцене.");
-            return;
-        }
-
-        switch (triggerType)
-        {
-            case AchievementTriggerType.StartGame:
-                AchievementSystem.Instance.StartGame();
-                break;
-
-            case AchievementTriggerType.CompleteTutorial:
-                AchievementSystem.Instance.CompleteTutorial();
-                break;
-
-            case AchievementTriggerType.CompleteLevel:
-                AchievementSystem.Instance.CompleteLevel(noDamageCondition);
-                break;
-
-            case AchievementTriggerType.KillFinalBoss:
-                AchievementSystem.Instance.KillFinalBoss();
-                break;
-
-            case AchievementTriggerType.CompleteFloor:
-                AchievementSystem.Instance.CompleteFloor(floorNumber);
-                break;
-
-            case AchievementTriggerType.CompleteGame:
-                AchievementSystem.Instance.CompleteGame();
-                break;
-        }
-
-        // Отключаем объект триггера после срабатывания (опционально)
-        gameObject.SetActive(false);
+        achievementText.text = achievementName;
+        achievementPanel.SetActive(true);
+        Invoke("HideAchievement", displayTime);
     }
-}
 
-public enum AchievementTriggerType
-{
-    StartGame,
-    CompleteTutorial,
-    CompleteLevel,
-    KillFinalBoss,
-    CompleteFloor,
-    CompleteGame
+    void HideAchievement()
+    {
+        achievementPanel.SetActive(false);
+    }
 }
