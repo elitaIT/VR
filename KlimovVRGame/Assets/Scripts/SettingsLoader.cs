@@ -1,13 +1,48 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SettingsLoader : MonoBehaviour
 {
-    void Start()
+    private static SettingsLoader instance;
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject); // уже есть, удаляем дубликат
+            return;
+        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        LoadSettings();
+    }
+
+    private void LoadSettings()
     {
         MoveSettings move = FindObjectOfType<MoveSettings>();
-        if (move) move.ApplySavedMovementMode();
+        if (move)
+        {
+            Debug.Log("[SettingsLoader] Применение MoveSettings");
+            move.ApplySavedMovementMode();
+        }
 
         RotateSettings rotate = FindObjectOfType<RotateSettings>();
-        if (rotate) rotate.ApplySavedTurnMode();
+        if (rotate)
+        {
+            Debug.Log("[SettingsLoader] Применение RotateSettings");
+            rotate.ApplySavedTurnMode();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 }

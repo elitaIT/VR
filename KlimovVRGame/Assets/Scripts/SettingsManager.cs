@@ -43,11 +43,13 @@ public class SettingsManager : MonoBehaviour
     {
         moveSettings?.SetMovementModeByIndex(index);
         PlayerPrefs.SetInt(MoveKey, index);
+        PlayerPrefs.Save();
     }
 
     void OnTurnChanged(int index)
     {
         rotateSettings?.SetTurnModeByIndex(index);
         PlayerPrefs.SetInt(TurnKey, index);
+        PlayerPrefs.Save();
     }
 }
