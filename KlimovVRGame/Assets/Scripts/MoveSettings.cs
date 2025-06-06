@@ -1,33 +1,63 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
+
+public enum MovementMode
+{
+    Teleport,
+    Joystick
+}
 
 public class MoveSettings : MonoBehaviour
 {
-    [Header("Movement Providers")]
-    public UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider teleportProvider;
+    public ControllerInputActionManager inputActionManager;
     public DynamicMoveProvider moveProvider;
+    public UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider teleportationProvider;
+    public GameObject leftTeleportRay;
 
-    private const string MovementPrefKey = "MovementMode"; // 0 = Teleport, 1 = Move
+    private const string MoveKey = "MoveMode";
 
     void Start()
     {
-        int mode = PlayerPrefs.GetInt(MovementPrefKey, 0);
-        ApplyMovementMode(mode);
+        var saved = (MovementMode)PlayerPrefs.GetInt(MoveKey, 0);
+        SetMovementMode(saved);
     }
 
-    public void OnMovementModeChanged(int modeIndex)
+    public void ApplySavedMovementMode()
     {
-        ApplyMovementMode(modeIndex);
-        PlayerPrefs.SetInt(MovementPrefKey, modeIndex);
+        var saved = (MovementMode)PlayerPrefs.GetInt("MoveMode", 0);
+        SetMovementMode(saved);
     }
 
-    private void ApplyMovementMode(int modeIndex)
+    public void SetMovementMode(MovementMode mode)
     {
-        if (teleportProvider != null)
-            teleportProvider.enabled = (modeIndex == 0);
+        bool isTeleport = mode == MovementMode.Teleport;
 
-        if (moveProvider != null)
-            moveProvider.enabled = (modeIndex == 1);
+        if (moveProvider)
+        {
+            moveProvider.enabled = !isTeleport;
+            
+        }
+        if (teleportationProvider)
+        {
+            teleportationProvider.enabled = isTeleport;
+        }
+        if (leftTeleportRay)
+        {
+            leftTeleportRay.SetActive(isTeleport);
+        }
+        if (inputActionManager)
+        {
+            inputActionManager.smoothMotionEnabled = !isTeleport; // вот так правильно
+        }
+
+        PlayerPrefs.SetInt(MoveKey, (int)mode);
+    }
+
+    // ��� Dropdown � ���������� ����� OnValueChanged(int)
+    public void SetMovementModeByIndex(int index)
+    {
+        SetMovementMode((MovementMode)index);
     }
 }

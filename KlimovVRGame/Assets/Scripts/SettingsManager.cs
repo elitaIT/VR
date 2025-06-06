@@ -1,112 +1,53 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.Audio;
 
-public class VRSettingsManager : MonoBehaviour
+public class SettingsManager : MonoBehaviour
 {
-    [Header("Audio")]
-    public AudioMixer audioMixer;
-    public Slider volumeSlider;
-    public TextMeshProUGUI volumeValueText;
-
-    [Header("Movement")]
-    [SerializeField] private GameObject moveProviderObject; // Сюда перетаскиваем объект "Move" из сцены
-    private ActionBasedContinuousMoveProvider dynamicMove;
-    public UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider teleportation;
     public TMP_Dropdown movementDropdown;
-    public TextMeshProUGUI movementTypeText;
+    public TMP_Dropdown turnDropdown;
 
-    [Header("Rotation")]
-    public GameObject xrOrigin;
-    public TMP_Dropdown rotationDropdown;
-    public Slider turnSpeedSlider;
-    public TextMeshProUGUI turnSpeedValueText;
+    public MoveSettings moveSettings;
+    public RotateSettings rotateSettings;
 
-    private ContinuousTurnProviderBase continuousTurn;
-    private SnapTurnProviderBase snapTurn;
+    private const string MoveKey = "MoveMode";
+    private const string TurnKey = "TurnMode";
 
-    private void Awake()
+    void Start()
     {
-        // Получаем компонент ActionBasedContinuousMoveProvider из перетащенного объекта
-        if (moveProviderObject != null)
+        // Получаем сохранённые значения или значения по умолчанию
+        int savedMoveMode = PlayerPrefs.GetInt(MoveKey, 0);
+        int savedTurnMode = PlayerPrefs.GetInt(TurnKey, 1); // Snap по умолчанию
+
+        // Устанавливаем индексы в UI
+        if (movementDropdown != null)
         {
-            dynamicMove = moveProviderObject.GetComponent<ActionBasedContinuousMoveProvider>();
-            if (dynamicMove == null)
-            {
-                Debug.LogError("ActionBasedContinuousMoveProvider не найден на объекте " + moveProviderObject.name);
-            }
-        }
-    }
-
-    private void Start()
-    {
-        FindTurnComponents();
-        InitializeUI();
-        LoadSettings();
-    }
-
-    private void FindTurnComponents()
-    {
-        if (xrOrigin != null)
-        {
-            continuousTurn = xrOrigin.GetComponentInChildren<ContinuousTurnProviderBase>();
-            snapTurn = xrOrigin.GetComponentInChildren<SnapTurnProviderBase>();
+            movementDropdown.value = savedMoveMode;
+            movementDropdown.RefreshShownValue();
+            movementDropdown.onValueChanged.AddListener(OnMovementChanged);
         }
 
-        if (continuousTurn == null || snapTurn == null)
-            Debug.LogWarning("Компоненты поворота не найдены!");
-    }
-
-    private void InitializeUI()
-    {
-        volumeSlider.onValueChanged.AddListener(SetVolume);
-        movementDropdown.onValueChanged.AddListener(SetMovementType);
-        rotationDropdown.onValueChanged.AddListener(SetRotationType);
-        turnSpeedSlider.onValueChanged.AddListener(SetTurnSpeed);
-    }
-
-    public void SetVolume(float value)
-    {
-        float volume = Mathf.Clamp(value, 0.0001f, 1f);
-        audioMixer.SetFloat("MasterVolume", Mathf.Log10(volume) * 20);
-        volumeValueText.text = $"{Mathf.RoundToInt(volume * 100)}%";
-        PlayerPrefs.SetFloat("Volume", volume);
-    }
-
-    public void SetMovementType(int index)
-    {
-        if (dynamicMove != null) dynamicMove.enabled = (index == 0);
-        if (teleportation != null) teleportation.enabled = (index == 1);
-        movementTypeText.text = movementDropdown.options[index].text;
-        PlayerPrefs.SetInt("MovementType", index);
-    }
-
-    public void SetRotationType(int index)
-    {
-        if (continuousTurn != null) continuousTurn.enabled = (index == 1);
-        if (snapTurn != null) snapTurn.enabled = (index == 0);
-        PlayerPrefs.SetInt("RotationType", index);
-    }
-
-    public void SetTurnSpeed(float speed)
-    {
-        if (continuousTurn != null)
+        if (turnDropdown != null)
         {
-            continuousTurn.turnSpeed = speed * 180f;
-            turnSpeedValueText.text = $"{Mathf.RoundToInt(speed * 100)}%";
-            PlayerPrefs.SetFloat("TurnSpeed", speed);
+            turnDropdown.value = savedTurnMode;
+            turnDropdown.RefreshShownValue();
+            turnDropdown.onValueChanged.AddListener(OnTurnChanged);
         }
+
+        // Применяем настройки
+        moveSettings?.SetMovementModeByIndex(savedMoveMode);
+        rotateSettings?.SetTurnModeByIndex(savedTurnMode);
     }
 
-    private void LoadSettings()
+    void OnMovementChanged(int index)
     {
-        volumeSlider.value = PlayerPrefs.GetFloat("Volume", 0.75f);
-        movementDropdown.value = PlayerPrefs.GetInt("MovementType", 0);
-        rotationDropdown.value = PlayerPrefs.GetInt("RotationType", 0);
-        turnSpeedSlider.value = PlayerPrefs.GetFloat("TurnSpeed", 0.5f);
+        moveSettings?.SetMovementModeByIndex(index);
+        PlayerPrefs.SetInt(MoveKey, index);
     }
 
-    void OnDisable() => PlayerPrefs.Save();
+    void OnTurnChanged(int index)
+    {
+        rotateSettings?.SetTurnModeByIndex(index);
+        PlayerPrefs.SetInt(TurnKey, index);
+    }
 }

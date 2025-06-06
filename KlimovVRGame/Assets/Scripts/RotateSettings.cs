@@ -1,39 +1,62 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
+
+public enum TurnMode
+{
+    Off,
+    Snap,
+    Smooth
+}
 
 public class RotateSettings : MonoBehaviour
 {
-    [Header("Turn Providers")]
     public SnapTurnProvider snapTurnProvider;
     public ContinuousTurnProvider continuousTurnProvider;
+    public ControllerInputActionManager inputActionManager;
 
-private const string TurnPrefKey = "TurnMode"; // 0 = Off, 1 = Snap, 2 = Smooth
+    private const string TurnKey = "TurnMode";
 
     void Start()
     {
-        int mode = PlayerPrefs.GetInt(TurnPrefKey, 0);
-        ApplyTurnMode(mode);
+        TurnMode savedMode = (TurnMode)PlayerPrefs.GetInt(TurnKey, (int)TurnMode.Snap);
+        ApplyTurnMode(savedMode);
     }
 
-    public void OnTurnModeChanged(int modeIndex)
+    public void ApplySavedTurnMode()
     {
-        ApplyTurnMode(modeIndex);
-        PlayerPrefs.SetInt(TurnPrefKey, modeIndex);
+        var saved = (TurnMode)PlayerPrefs.GetInt("TurnMode", (int)TurnMode.Snap);
+        SetTurnModeByIndex((int)saved);
     }
 
-    private void ApplyTurnMode(int modeIndex)
+    public void SetTurnModeByIndex(int index)
     {
-        if (snapTurnProvider != null)
-            snapTurnProvider.enabled = (modeIndex == 1);
+        TurnMode selected = (TurnMode)index;
+        ApplyTurnMode(selected);
+    }
 
-        if (continuousTurnProvider != null)
-            continuousTurnProvider.enabled = (modeIndex == 2);
+    private void ApplyTurnMode(TurnMode mode)
+    {
+        if (snapTurnProvider)
+            snapTurnProvider.enabled = (mode == TurnMode.Snap);
 
-        if (modeIndex == 0)
+        if (continuousTurnProvider)
+            continuousTurnProvider.enabled = (mode == TurnMode.Smooth);
+
+        if (inputActionManager)
+            inputActionManager.smoothTurnEnabled = (mode == TurnMode.Smooth);
+
+        if (mode == TurnMode.Off)
         {
-            if (snapTurnProvider != null) snapTurnProvider.enabled = false;
-            if (continuousTurnProvider != null) continuousTurnProvider.enabled = false;
+            if (snapTurnProvider) snapTurnProvider.enabled = false;
+            if (continuousTurnProvider) continuousTurnProvider.enabled = false;
+
+            if (inputActionManager)
+                inputActionManager.smoothTurnEnabled = false;
         }
+
+        PlayerPrefs.SetInt(TurnKey, (int)mode);
     }
 }
